@@ -196,6 +196,7 @@ export function EditForm(props: EditFormProps) {
 
   const [entity, setEntity] = useState(props.entityObj);
   const [characterCounts, setCharacterCounts] = useState({});
+  const [editEntries, setEditEntries] = useState(props.editEntries);
 
   const [uploadPhotoMap, setUploadPhotoMap] = useState({});
 
@@ -213,18 +214,24 @@ export function EditForm(props: EditFormProps) {
     // )
   };
 
+  // Deletes iPill from iEntry
+  const onRemovePill = (iEntry, iPill) => {
+    editEntries[iEntry].extramParam.pills.splice(iPill, 1);
+    setEditEntries([...editEntries]);
+  }
+
   useEffect(() => {
     setEntity(props.entityObj);
   }, [props.entityObj]);
 
   const shadowFileInput = useRef([]);
   useEffect(() => {
-    shadowFileInput.current = shadowFileInput.current.slice(0, props.editEntries);
-  }, [props.editEntries]);
+    shadowFileInput.current = shadowFileInput.current.slice(0, editEntries);
+  }, [editEntries]);
 
   const [listFieldSize, setListFieldSize] = useState([]);
   useEffect(() => {
-    const currListFieldSize = props.editEntries.map((entry) => {
+    const currListFieldSize = editEntries.map((entry) => {
       const isArrField = props.entityObj && (entry.type === EditEntryType.TextList || entry.type === EditEntryType.DoubleTextList);
       return isArrField ? (
         entry.attribute in props.entityObj && props.entityObj[entry.attribute] ?
@@ -232,16 +239,16 @@ export function EditForm(props: EditFormProps) {
       ) : 0;
     })
     setListFieldSize(currListFieldSize);
-  }, [props.editEntries]);
+  }, [editEntries]);
 
   const [radioFieldValue, setRadioFieldValue] = useState([]);
   useEffect(() => {
-    const currRadioFieldValue = props.editEntries.map((entry) => {
+    const currRadioFieldValue = editEntries.map((entry) => {
       const isRadioField = props.entityObj && entry.type === EditEntryType.Radio;
       return isRadioField ? props.entityObj[entry.attribute] : "";
     })
     setRadioFieldValue(currRadioFieldValue);
-  }, [props.editEntries]);
+  }, [editEntries]);
 
   const [checkboxFieldValue, setCheckboxFieldValue] = useState(false);
 
@@ -254,8 +261,8 @@ export function EditForm(props: EditFormProps) {
           //   toast.error("Unknown error.");
           //   return;
           // }
-          const updateTargets = new Set(props.editEntries.map((editEntry) => editEntry.attribute));
-          const editEntryIdx = Object.fromEntries(props.editEntries.map((editEntry, index) => [editEntry.attribute, index]));
+          const updateTargets = new Set(editEntries.map((editEntry) => editEntry.attribute));
+          const editEntryIdx = Object.fromEntries(editEntries.map((editEntry, index) => [editEntry.attribute, index]));
 
           for (const target of event.target) {
             if (!target.name) continue;
@@ -311,7 +318,7 @@ export function EditForm(props: EditFormProps) {
           }
 
           // editEntries form validation
-          for (const editEntry of props.editEntries) {
+          for (const editEntry of editEntries) {
             if (editEntry.isRequired) {
               if (!entity[editEntry.attribute]) {
                 // toast.error(`Field is required: "${editEntry.attributeName}"`);
@@ -411,7 +418,7 @@ export function EditForm(props: EditFormProps) {
             </div>
             <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-4">
               {
-                props.editEntries.map((editEntry: EditEntry, index) => {
+                editEntries.map((editEntry: EditEntry, index) => {
                   const requiredMark = editEntry.isRequired ? "*" : "";
                   // if (editEntry.condition != null) {
                   //   if (!editEntry.condition) return;
@@ -1243,7 +1250,7 @@ export function EditForm(props: EditFormProps) {
                     );
                   } else if (editEntry.type === EditEntryType.PillList) {
                     return (
-                      <PillList pills={editEntry.extramParam.pills}/>
+                      <PillList key={index} pills={editEntry.extramParam.pills} index={index} onRemove={onRemovePill}/>
                     );
                   }
                 })

@@ -10,7 +10,7 @@ const editEntries = [
     isRequired: false,
     validations: ['Email'],
     extramParam: {
-      pills: ['Pill Label', 'Pill Label']
+      pills: ['Pill Label 1', 'Pill Label 2']
     }
   }
 ]
